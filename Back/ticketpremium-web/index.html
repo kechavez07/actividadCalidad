@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TicketPremium - VIP Booking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Background Animado -->
+    <div class="bg-animated"></div>
+
+    <header>
+        <div class="logo">TicketPremium <span>VIP</span></div>
+        <div id="user-info" class="hidden">
+            <span id="current-user"></span>
+            <button id="btn-logout" class="btn-small btn-outline">Salir</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- VISTA: LOGIN -->
+        <section id="view-login" class="view glass-panel active">
+            <h2>Acceso Operador</h2>
+            <p>Ingresa tus credenciales para acceder al sistema de reservas.</p>
+            <form id="form-login">
+                <div class="input-group">
+                    <label for="login-user">Usuario</label>
+                    <input type="text" id="login-user" value="MONSTER" required>
+                </div>
+                <div class="input-group">
+                    <label for="login-pass">Contraseña</label>
+                    <input type="password" id="login-pass" value="MONSTER9" required>
+                </div>
+                <div id="login-error" class="error-text hidden">Credenciales incorrectas</div>
+                <button type="submit" class="btn-primary" id="btn-do-login">
+                    <span class="btn-text">Ingresar</span>
+                    <span class="loader hidden"></span>
+                </button>
+            </form>
+        </section>
+
+        <!-- VISTA: LISTA DE PARTIDOS -->
+        <section id="view-matches" class="view glass-panel hidden">
+            <h2>Selecciona un Partido</h2>
+            <p>FIFA World Cup 2026 - Encuentros Disponibles</p>
+            <div id="matches-container" class="grid-cards">
+                <!-- Inyectado por JS -->
+            </div>
+            <div class="loader-container hidden" id="matches-loader">
+                <div class="spinner"></div>
+            </div>
+        </section>
+
+        <!-- VISTA: MAPA DEL ESTADIO -->
+        <section id="view-stadium" class="view glass-panel hidden stadium-view">
+            <div class="stadium-header">
+                <button id="btn-back-matches" class="btn-back">← Volver</button>
+                <h2 id="stadium-match-title">Partido</h2>
+            </div>
+            <p class="subtitle">Selecciona un asiento libre directamente en el mapa del estadio.</p>
+            
+            <div class="stadium-legend">
+                <span class="leg-item"><div class="seat LIBRE"></div> Libre</span>
+                <span class="leg-item"><div class="seat RESERVADO"></div> Reservado</span>
+                <span class="leg-item"><div class="seat COMPRADO"></div> Ocupado</span>
+            </div>
+
+            <!-- CSS Grid / Flexbox representation of the stadium -->
+            <div class="stadium-map">
+                <!-- GENERAL TOP -->
+                <div class="stadium-section section-general-top" id="sec-general">
+                    <h3>GENERAL</h3>
+                    <div class="seats-grid" id="grid-general"></div>
+                </div>
+
+                <div class="stadium-middle">
+                    <!-- TRIBUNA LEFT -->
+                    <div class="stadium-section section-tribuna-left" id="sec-tribuna-left">
+                        <h3>TRIBUNA</h3>
+                        <div class="seats-grid" id="grid-tribuna-left"></div>
+                    </div>
+
+                    <!-- PITCH -->
+                    <div class="stadium-pitch">
+                        <div class="pitch-center"></div>
+                        <div class="pitch-area left-area"></div>
+                        <div class="pitch-area right-area"></div>
+                    </div>
+
+                    <!-- TRIBUNA RIGHT -->
+                    <div class="stadium-section section-tribuna-right" id="sec-tribuna-right">
+                        <h3>TRIBUNA</h3>
+                        <div class="seats-grid" id="grid-tribuna-right"></div>
+                    </div>
+                </div>
+
+                <!-- PALCO BOTTOM -->
+                <div class="stadium-section section-palco-bottom" id="sec-palco">
+                    <h3>PALCO VIP</h3>
+                    <div class="seats-grid" id="grid-palco"></div>
+                </div>
+            </div>
+
+            <div class="loader-container hidden" id="stadium-loader">
+                <div class="spinner"></div>
+            </div>
+        </section>
+
+        <!-- MODAL: RESERVAR ASIENTO (Verificar Crédito) -->
+        <div id="modal-reserve" class="modal hidden">
+            <div class="modal-content glass-panel">
+                <button class="close-modal" id="btn-close-reserve">×</button>
+                <h3>Reservar Asiento</h3>
+                <p id="reserve-seat-info" class="highlight-info">Asiento X - Localidad</p>
+                <form id="form-reserve">
+                    <div class="input-group">
+                        <label for="res-cedula">Cédula del Cliente</label>
+                        <input type="text" id="res-cedula" placeholder="Ej: 1712345678" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="res-nombre">Nombre Completo</label>
+                        <input type="text" id="res-nombre" placeholder="Juan Perez" required>
+                    </div>
+                    <div id="reserve-error" class="error-text hidden"></div>
+                    <div id="reserve-success" class="success-text hidden"></div>
+                    <button type="submit" class="btn-primary" id="btn-do-reserve">
+                        <span class="btn-text">Verificar Crédito y Reservar</span>
+                        <span class="loader hidden"></span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- VISTA: CARRITO / COMPRA FINAL -->
+        <section id="view-cart" class="view glass-panel hidden">
+            <h2>Carrito de Compras</h2>
+            <p>Confirma la compra de tu asiento reservado.</p>
+            
+            <div class="cart-details">
+                <div class="cart-item">
+                    <div class="cart-info">
+                        <h3 id="cart-match">Partido</h3>
+                        <p id="cart-seat">Localidad - Asiento #</p>
+                        <p class="cart-price" id="cart-price">$0.00</p>
+                    </div>
+                </div>
+                
+                <div class="cart-summary">
+                    <p>Cliente: <strong id="cart-client-name"></strong> (<span id="cart-client-cedula"></span>)</p>
+                    <p>Monto Aprobado: <strong class="success-text" id="cart-monto-max"></strong></p>
+                    <p class="warning-text">La reserva expira en 10 minutos.</p>
+                </div>
+                
+                <form id="form-checkout">
+                    <div class="input-group">
+                        <label for="checkout-plazo">Plazo de pago (Meses)</label>
+                        <select id="checkout-plazo">
+                            <option value="3">3 Meses</option>
+                            <option value="6">6 Meses</option>
+                            <option value="9">9 Meses</option>
+                            <option value="12">12 Meses</option>
+                        </select>
+                    </div>
+                    <div id="checkout-error" class="error-text hidden"></div>
+                    <div class="cart-actions">
+                        <button type="button" class="btn-danger" id="btn-cancel-reserve">Cancelar Reserva</button>
+                        <button type="submit" class="btn-success" id="btn-do-checkout">
+                            <span class="btn-text">Confirmar y Generar Crédito</span>
+                            <span class="loader hidden"></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- VISTA: FACTURA Y AMORTIZACIÓN -->
+        <section id="view-invoice" class="view glass-panel hidden">
+            <div class="success-icon">✓</div>
+            <h2>¡Compra Exitosa!</h2>
+            <p>Factura: <strong id="invoice-id"></strong></p>
+            
+            <div class="invoice-summary">
+                <h3>Tabla de Amortización</h3>
+                <p>Monto financiado: <strong id="invoice-monto"></strong> a <strong id="invoice-plazo"></strong> meses.</p>
+                
+                <div class="table-responsive">
+                    <table class="amortization-table">
+                        <thead>
+                            <tr>
+                                <th>Cuota</th>
+                                <th>Valor</th>
+                                <th>Capital</th>
+                                <th>Interés</th>
+                                <th>Saldo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="amortization-body">
+                            <!-- Inyectado por JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <button id="btn-go-home" class="btn-primary mt-4">Comprar otro boleto</button>
+        </section>
+
+    </main>
+
+    <script src="js/soap-client.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

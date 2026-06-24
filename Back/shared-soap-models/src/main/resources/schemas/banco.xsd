@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://ticketpremium.com/banco/ws"
+           xmlns:tns="http://ticketpremium.com/banco/ws"
+           elementFormDefault="qualified">
+
+    <!-- Verificar Sujeto Crédito -->
+    <xs:element name="verificarSujetoCreditoRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="cedula" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="verificarSujetoCreditoResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="esSujeto" type="xs:boolean"/>
+                <xs:element name="mensaje" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Obtener Monto Máximo -->
+    <xs:element name="obtenerMontoMaximoRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="cedula" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="obtenerMontoMaximoResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="montoMaximo" type="xs:double"/>
+                <xs:element name="mensaje" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Registrar Crédito y Amortización -->
+    <xs:element name="registrarCreditoAmortizacionRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="cedula" type="xs:string"/>
+                <xs:element name="monto" type="xs:double"/>
+                <xs:element name="plazoMeses" type="xs:int"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="registrarCreditoAmortizacionResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="aprobado" type="xs:boolean"/>
+                <xs:element name="mensaje" type="xs:string"/>
+                <xs:element name="tablaAmortizacion" type="tns:Cuota" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Tipo de Cuota -->
+    <xs:complexType name="Cuota">
+        <xs:sequence>
+            <xs:element name="numeroCuota" type="xs:int"/>
+            <xs:element name="valorCuota" type="xs:double"/>
+            <xs:element name="interesPagado" type="xs:double"/>
+            <xs:element name="capitalPagado" type="xs:double"/>
+            <xs:element name="saldo" type="xs:double"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Login -->
+    <xs:element name="loginRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="usuario" type="xs:string"/>
+                <xs:element name="contrasena" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="loginResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="autenticado" type="xs:boolean"/>
+                <xs:element name="mensaje" type="xs:string"/>
+                <xs:element name="rol" type="xs:string" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

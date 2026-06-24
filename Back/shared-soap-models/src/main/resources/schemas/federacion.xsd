@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://ticketpremium.com/federacion/ws"
+           xmlns:tns="http://ticketpremium.com/federacion/ws"
+           elementFormDefault="qualified">
+
+    <!-- Get Partidos Disponibles -->
+    <xs:element name="getPartidosDisponiblesRequest">
+        <xs:complexType>
+            <xs:sequence/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="getPartidosDisponiblesResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="partidos" type="tns:PartidoSoap" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Get Localidades por Partido -->
+    <xs:element name="getLocalidadesPorPartidoRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="codigoPartido" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="getLocalidadesPorPartidoResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="localidades" type="tns:LocalidadPartidoSoap" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Decrementar Disponibilidad -->
+    <xs:element name="decrementarDisponibilidadRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="codigoPartido" type="xs:string"/>
+                <xs:element name="codigoLocalidad" type="xs:string"/>
+                <xs:element name="cantidad" type="xs:int"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="decrementarDisponibilidadResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="success" type="xs:boolean"/>
+                <xs:element name="mensaje" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- ===== RESERVA DE ASIENTOS ===== -->
+
+    <!-- Reservar Asiento -->
+    <xs:element name="reservarAsientoRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="codigoPartido" type="xs:string"/>
+                <xs:element name="codigoLocalidad" type="xs:string"/>
+                <xs:element name="numeroAsiento" type="xs:int"/>
+                <xs:element name="clienteCedula" type="xs:string"/>
+                <xs:element name="clienteNombre" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="reservarAsientoResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="success" type="xs:boolean"/>
+                <xs:element name="mensaje" type="xs:string"/>
+                <xs:element name="asiento" type="tns:AsientoSoap" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Confirmar Compra de Asiento -->
+    <xs:element name="confirmarCompraAsientoRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="codigoPartido" type="xs:string"/>
+                <xs:element name="codigoLocalidad" type="xs:string"/>
+                <xs:element name="numeroAsiento" type="xs:int"/>
+                <xs:element name="clienteCedula" type="xs:string"/>
+                <xs:element name="facturaId" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="confirmarCompraAsientoResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="success" type="xs:boolean"/>
+                <xs:element name="mensaje" type="xs:string"/>
+                <xs:element name="asiento" type="tns:AsientoSoap" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Liberar Asiento (cancelar reserva) -->
+    <xs:element name="liberarAsientoRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="codigoPartido" type="xs:string"/>
+                <xs:element name="codigoLocalidad" type="xs:string"/>
+                <xs:element name="numeroAsiento" type="xs:int"/>
+                <xs:element name="clienteCedula" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="liberarAsientoResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="success" type="xs:boolean"/>
+                <xs:element name="mensaje" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Consultar Asientos por Localidad y Partido -->
+    <xs:element name="consultarAsientosRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="codigoPartido" type="xs:string"/>
+                <xs:element name="codigoLocalidad" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="consultarAsientosResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="asientos" type="tns:AsientoSoap" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- ===== TIPOS COMPLEJOS ===== -->
+
+    <!-- Tipo Partido -->
+    <xs:complexType name="PartidoSoap">
+        <xs:sequence>
+            <xs:element name="codigo" type="xs:string"/>
+            <xs:element name="equipoLocal" type="xs:string"/>
+            <xs:element name="equipoVisita" type="xs:string"/>
+            <xs:element name="fecha" type="xs:string"/>
+            <xs:element name="lugar" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Tipo LocalidadPartido -->
+    <xs:complexType name="LocalidadPartidoSoap">
+        <xs:sequence>
+            <xs:element name="codigoLocalidad" type="xs:string"/>
+            <xs:element name="disponibilidad" type="xs:int"/>
+            <xs:element name="precio" type="xs:double"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Tipo Asiento -->
+    <xs:complexType name="AsientoSoap">
+        <xs:sequence>
+            <xs:element name="numeroAsiento" type="xs:int"/>
+            <xs:element name="codigoLocalidad" type="xs:string"/>
+            <xs:element name="estado" type="xs:string"/>
+            <xs:element name="clienteCedula" type="xs:string" minOccurs="0"/>
+            <xs:element name="clienteNombre" type="xs:string" minOccurs="0"/>
+            <xs:element name="facturaId" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>
