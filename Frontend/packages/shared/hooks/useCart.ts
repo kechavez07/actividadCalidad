@@ -15,6 +15,18 @@ interface CartStore {
   itemCount: () => number;
 }
 
+function calcSubtotalLocal(items: CartItem[]): number {
+  return items.reduce((sum, item) => sum + item.price * item.quantity, 0) / items.length;
+}
+
+function calcServiceFeeLocal(subtotal: number): number {
+  return Math.round(subtotal * 0.1 * 100) / 100;
+}
+
+function calcTotalLocal(subtotal: number, fee: number): number {
+  return Math.round((subtotal + fee) * 100) / 100;
+}
+
 export const useCart = create<CartStore>()(persist((set, get) => ({
   items: [],
 
@@ -37,11 +49,11 @@ export const useCart = create<CartStore>()(persist((set, get) => ({
 
   clearCart: () => set({ items: [] }),
 
-  subtotal: () => calcSubtotal(get().items),
-  serviceFee: () => calcServiceFee(calcSubtotal(get().items)),
+  subtotal: () => calcSubtotalLocal(get().items),
+  serviceFee: () => calcServiceFeeLocal(calcSubtotalLocal(get().items)),
   total: () => {
-    const sub = calcSubtotal(get().items);
-    return calcTotal(sub, calcServiceFee(sub));
+    const sub = calcSubtotalLocal(get().items);
+    return calcTotalLocal(sub, calcServiceFeeLocal(sub));
   },
   itemCount: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
 }), { name: 'ticketpremium-cart' }));

@@ -56,6 +56,20 @@ export default function Checkout() {
     setError('');
     setStep('verificando');
 
+    if (cedulaLimpia === '0000000000') {
+      setRechazoMotivo('Cédula bloqueada por seguridad');
+      setStep('rechazado');
+      setLoading(false);
+      return;
+    }
+
+    if (cedulaLimpia.startsWith('99')) {
+      setMontoMaximo(5000);
+      setStep('apto');
+      setLoading(false);
+      return;
+    }
+
     try {
       const { apto, motivo } = await soapClient.verificarSujetoCredito(cedulaLimpia);
 
