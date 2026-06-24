@@ -1,0 +1,31 @@
+{
+  "name": "@ticketpremium/shared",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./types": "./types.ts",
+    "./pricing": "./pricing.ts",
+    "./validation": "./validation.ts",
+    "./data/stadiums": "./data/stadiums.ts",
+    "./data/matches": "./data/matches.ts",
+    "./data/seats": "./data/seats.ts",
+    "./hooks/useCart": "./hooks/useCart.ts",
+    "./hooks/useAuth": "./hooks/useAuth.ts"
+  },
+  "scripts": {
+    "test": "bun test seat-utils.test.ts stadium-resolve.test.ts"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "zustand": "^4.5.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "identifier": "default",
+  "description": "Default capabilities for TicketPremium",
+  "windows": ["main"],
+  "permissions": [
+    "core:default"
+  ]
+}

@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-fifa-dark text-white font-sans antialiased;
+  }
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-gradient-gold text-fifa-darker font-semibold px-6 py-3 rounded-lg hover:opacity-90 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply border border-fifa-gold text-fifa-gold font-semibold px-6 py-3 rounded-lg hover:bg-fifa-gold hover:text-fifa-darker transition-all duration-200;
+  }
+  .card {
+    @apply bg-fifa-navy border border-fifa-blue/30 rounded-xl p-4 hover:border-fifa-gold/40 transition-all duration-200;
+  }
+  .input-field {
+    @apply w-full bg-fifa-blue/20 border border-fifa-blue/50 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-fifa-gold placeholder-gray-500 transition-colors;
+  }
+  .input-error {
+    @apply border-red-500 focus:border-red-500;
+  }
+}

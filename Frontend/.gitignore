@@ -1,0 +1,17 @@
+node_modules
+dist
+.next
+out
+build
+.turbo
+.env
+.env.local
+.env.*.local
+*.log
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+coverage
+src-tauri/target
+EXAMEN3.zip

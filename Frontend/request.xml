@@ -1,0 +1,6 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ws="http://ticketpremium.com/federacion/ws">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <ws:getPartidosDisponiblesRequest/>
+  </soapenv:Body>
+</soapenv:Envelope>
