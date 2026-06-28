@@ -287,3 +287,49 @@ El módulo Frontend de TicketPremium FIFA 2026 presenta **defectos críticos en 
 3. **Mantenibilidad:** El módulo de pagos es prácticamente inmantenible con su complejidad ciclomática actual y 0% de cobertura de pruebas.
 
 **Veredicto:** El sistema en su estado actual **no debería desplegarse en producción**.
+
+---
+
+## 7. Resultados oficiales SonarCloud
+
+**Proyecto:** `GuamanJordan/actividadCalidadQA` · Commit analizado: `7b12aac5`
+
+### Métricas reales (API SonarCloud)
+
+| Métrica | Valor | Rating Sonar |
+|---|---|---|
+| Líneas de código | 6.903 | — |
+| Vulnerabilidades | **16** | 🔴 E (peor posible) |
+| Bugs | **2** | 🟠 D |
+| Code Smells | **202** | 🟢 A |
+| Complejidad Cognitiva total | **730** | — |
+| `applyDiscountTier` CC | **84** (máx permitido: 15) | 🔴 |
+| `procesarPagoCompleto` CC | **89** (máx permitido: 15) | 🔴 |
+| Duplicaciones | **7.0%** | — |
+| Cobertura | No configurada | — |
+
+### Lo que Sonar SÍ detectó
+
+| Severidad | Archivo | Línea | Hallazgo |
+|---|---|---|---|
+| 🔴 BLOCKER | `application.properties` (x2) | L6 | Secreto comprometido — credenciales en config |
+| 🔴 CRITICAL | `soap-client.ts` | L22 | `new Function()` — inyección de código |
+| 🔴 CRITICAL | `soap-client.ts` | L27 | `eval()` — inyección de código |
+| 🔴 CRITICAL | `validation.ts` | L61 | `eval()` — inyección de código |
+| 🟠 MAJOR | `config.ts` | L5, L23 | Passwords hardcodeados |
+| 🟠 MAJOR | `seat-utils.ts` | L92 | Empty block statement (`while(true){}`) |
+| 🔴 CRITICAL | `pricing.ts` | L24 | CC 84 — refactorizar |
+| 🔴 CRITICAL | `pricing.ts` | L124 | CC 89 + 19 parámetros |
+
+### ⚠️ Lo que Sonar NO detectó (solo encontrado por revisión manual + tests QA)
+
+| Vulnerabilidad | Archivo | Por qué Sonar no lo vio |
+|---|---|---|
+| SQL Injection en `validarConsultaDB` | `validation.ts:55` | Las reglas de SQL injection de SonarCloud para TypeScript no detectan concatenación de templates |
+| SQL Injection en `buscarUsuarioPorNombre` | `soap-client.ts:481` | Mismo motivo — función devuelve string, Sonar no traza el uso |
+| SQL Injection en `actualizarEstadoBoleto` | `soap-client.ts:485` | Mismo motivo |
+| Backdoor `admin/override_123` | `soap-client.ts:184` | Sonar no detecta credenciales hardcodeadas en lógica condicional de TypeScript |
+| Bug `calcSubtotal` divide por `items.length` | `pricing.ts:4` | Error de lógica de negocio — requiere conocer la intención del código |
+| `sanitizarEntradaUsuario` no sanitiza | `validation.ts:51` | Función sintácticamente válida — solo revisión de negocio lo revela |
+
+**Conclusión crítica:** SonarCloud con rating E aún tenía **4 vulnerabilidades de seguridad sin detectar** que solo encontramos con revisión manual y tests QA. Las herramientas automatizadas no reemplazan la auditoría humana.
