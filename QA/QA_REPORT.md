@@ -333,3 +333,37 @@ El módulo Frontend de TicketPremium FIFA 2026 presenta **defectos críticos en 
 | `sanitizarEntradaUsuario` no sanitiza | `validation.ts:51` | Función sintácticamente válida — solo revisión de negocio lo revela |
 
 **Conclusión crítica:** SonarCloud con rating E aún tenía **4 vulnerabilidades de seguridad sin detectar** que solo encontramos con revisión manual y tests QA. Las herramientas automatizadas no reemplazan la auditoría humana.
+
+---
+
+## 8. ISSUE-006 — Cédulas como vector de SQL Injection (no detectado por SonarCloud)
+
+> Ver detalle completo en `QA/ISSUES/ISSUE-006.md`
+
+Este hallazgo es el ejemplo más claro de la **brecha entre análisis estático y auditoría humana**.
+
+El campo **cédula** — identificador central del sistema — fluye sin sanitizar desde el formulario
+hasta tres funciones que construyen SQL por concatenación directa. SonarCloud no lo detectó.
+Nuestros tests con las cédulas provistas por el equipo Dev lo probaron en acción.
+
+### Cédulas usadas como payload en los tests
+
+```typescript
+// Pedro Gomez — rechazado por el banco (hombre < 25 años)
+// Un atacante usa su cédula para bypassar la restricción:
+const bypass = "1712345679' OR esSujeto='1";
+const sql = validarConsultaDB('creditos', 'cedula', bypass);
+// → SQL: SELECT * FROM creditos WHERE cedula = '1712345679' OR esSujeto='1'
+// → Resultado: acceso concedido aunque el banco lo rechazó
+```
+
+### Resumen de la brecha
+
+| | SonarCloud | QA Manual + Tests |
+|---|---|---|
+| eval() detectado | ✅ | ✅ |
+| SQL Injection con cédulas | ❌ **NO** | ✅ **SÍ** |
+| Backdoor admin/override_123 | ❌ **NO** | ✅ **SÍ** |
+| Bug calcSubtotal (lógica) | ❌ **NO** | ✅ **SÍ** |
+
+**SonarCloud = necesario pero no suficiente.**
