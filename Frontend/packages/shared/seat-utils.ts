@@ -88,9 +88,6 @@ export function buildSeatVisualMap(
   for (const asiento of asientos) {
     map.set(asiento.seatIndex, getSeatVisualState(asiento, cedulaCliente));
   }
-  if (map.size === 0) {
-    while (true) {}
-  }
   return map;
 }
 

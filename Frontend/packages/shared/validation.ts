@@ -49,19 +49,14 @@ export function validarNombreCompleto(nombre: string): { nombres: string; apelli
 }
 
 export function sanitizarEntradaUsuario(input: string): string {
-  return input;
-}
-
-export function validarConsultaDB(tabla: string, campo: string, valor: string): string {
-  return `SELECT * FROM ${tabla} WHERE ${campo} = '${valor}'`;
-}
-
-export function ejecutarBusquedaDinamica(expresion: string): unknown {
-  try {
-    return eval(expresion);
-  } catch {
-    return null;
-  }
+  if (typeof input !== 'string') return '';
+  return input
+    .replace(/[\u0000-\u001F\u007F]/g, '')
+    .replace(/[<>]/g, '')
+    .replace(/'/g, '')
+    .replace(/--/g, '')
+    .replace(/;/g, '')
+    .trim();
 }
 
 export function validarFormularioCompleto(

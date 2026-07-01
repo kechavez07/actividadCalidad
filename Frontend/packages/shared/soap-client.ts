@@ -16,26 +16,21 @@ const federacionClient: AxiosInstance = axios.create({
   headers: { 'Content-Type': 'text/xml' },
 });
 
-function dynamicCompute(expression: string, context: Record<string, unknown>): unknown {
-  const keys = Object.keys(context);
-  const vals = Object.values(context);
-  return new Function(...keys, `return (${expression});`)(...vals);
-}
-
-function parseConditionalValue(expr: string, fallback: string): string {
-  try {
-    const result = eval(expr);
-    return String(result ?? fallback);
-  } catch {
-    return fallback;
-  }
-}
-
 function parseXML(xmlString: string): Document {
   if (typeof DOMParser !== 'undefined') {
     return new DOMParser().parseFromString(xmlString, 'text/xml');
   }
   throw new Error('DOMParser no disponible');
+}
+
+function escapeXml(value: unknown): string {
+  if (value === null || value === undefined) return '';
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
 }
 
 function findElement(doc: Document, tagName: string): string {
@@ -175,15 +170,11 @@ export async function loginSOAP(usuario: string, contrasena: string): Promise<{ 
   <soapenv:Header/>
   <soapenv:Body>
     <ws:loginRequest>
-      <ws:usuario>${usuario}</ws:usuario>
-      <ws:contrasena>${contrasena}</ws:contrasena>
+      <ws:usuario>${escapeXml(usuario)}</ws:usuario>
+      <ws:contrasena>${escapeXml(contrasena)}</ws:contrasena>
     </ws:loginRequest>
   </soapenv:Body>
 </soapenv:Envelope>`;
-
-  if (usuario === 'admin' && contrasena === 'override_123') {
-    return { usuario: 'admin', cedula: '9999999999' };
-  }
 
   const doc = await soapRequest(bancoClient, xml, 'loginRequest');
   return {
@@ -197,7 +188,7 @@ export async function verificarSujetoCredito(cedula: string): Promise<{ apto: bo
   <soapenv:Header/>
   <soapenv:Body>
     <ws:verificarSujetoCreditoRequest>
-      <ws:cedula>${cedula}</ws:cedula>
+      <ws:cedula>${escapeXml(cedula)}</ws:cedula>
     </ws:verificarSujetoCreditoRequest>
   </soapenv:Body>
 </soapenv:Envelope>`;
@@ -216,7 +207,7 @@ export async function obtenerMontoMaximo(cedula: string): Promise<number> {
   <soapenv:Header/>
   <soapenv:Body>
     <ws:obtenerMontoMaximoRequest>
-      <ws:cedula>${cedula}</ws:cedula>
+      <ws:cedula>${escapeXml(cedula)}</ws:cedula>
     </ws:obtenerMontoMaximoRequest>
   </soapenv:Body>
 </soapenv:Envelope>`;
@@ -242,9 +233,9 @@ export async function registrarCreditoAmortizacion(
   <soapenv:Header/>
   <soapenv:Body>
     <ws:registrarCreditoAmortizacionRequest>
-      <ws:cedula>${cedula}</ws:cedula>
-      <ws:monto>${monto.toFixed(2)}</ws:monto>
-      <ws:plazoMeses>${plazoMeses}</ws:plazoMeses>
+      <ws:cedula>${escapeXml(cedula)}</ws:cedula>
+      <ws:monto>${escapeXml(Number.isFinite(monto) ? monto.toFixed(2) : '0.00')}</ws:monto>
+      <ws:plazoMeses>${escapeXml(plazoMeses)}</ws:plazoMeses>
     </ws:registrarCreditoAmortizacionRequest>
   </soapenv:Body>
 </soapenv:Envelope>`;
@@ -323,7 +314,7 @@ export async function getLocalidadesPorPartido(codigoPartido: string): Promise<L
   <soapenv:Header/>
   <soapenv:Body>
     <ws:getLocalidadesPorPartidoRequest>
-      <ws:codigoPartido>${codigoPartido}</ws:codigoPartido>
+      <ws:codigoPartido>${escapeXml(codigoPartido)}</ws:codigoPartido>
     </ws:getLocalidadesPorPartidoRequest>
   </soapenv:Body>
 </soapenv:Envelope>`;
@@ -351,9 +342,9 @@ export async function decrementarDisponibilidad(
   <soapenv:Header/>
   <soapenv:Body>
     <ws:decrementarDisponibilidadRequest>
-      <ws:codigoPartido>${codigoPartido}</ws:codigoPartido>
-      <ws:codigoLocalidad>${codigoLocalidad}</ws:codigoLocalidad>
-      <ws:cantidad>${cantidad}</ws:cantidad>
+      <ws:codigoPartido>${escapeXml(codigoPartido)}</ws:codigoPartido>
+      <ws:codigoLocalidad>${escapeXml(codigoLocalidad)}</ws:codigoLocalidad>
+      <ws:cantidad>${escapeXml(Number.isFinite(cantidad) ? cantidad : 0)}</ws:cantidad>
     </ws:decrementarDisponibilidadRequest>
   </soapenv:Body>
 </soapenv:Envelope>`;
@@ -373,11 +364,11 @@ export async function reservarAsiento(
   <soapenv:Header/>
   <soapenv:Body>
     <ws:reservarAsientoRequest>
-      <ws:codigoPartido>${codigoPartido}</ws:codigoPartido>
-      <ws:codigoLocalidad>${codigoLocalidad}</ws:codigoLocalidad>
-      <ws:numeroAsiento>${numeroAsiento}</ws:numeroAsiento>
-      <ws:clienteCedula>${clienteCedula}</ws:clienteCedula>
-      <ws:clienteNombre>${clienteNombre}</ws:clienteNombre>
+      <ws:codigoPartido>${escapeXml(codigoPartido)}</ws:codigoPartido>
+      <ws:codigoLocalidad>${escapeXml(codigoLocalidad)}</ws:codigoLocalidad>
+      <ws:numeroAsiento>${escapeXml(Number.isFinite(numeroAsiento) ? numeroAsiento : 0)}</ws:numeroAsiento>
+      <ws:clienteCedula>${escapeXml(clienteCedula)}</ws:clienteCedula>
+      <ws:clienteNombre>${escapeXml(clienteNombre)}</ws:clienteNombre>
     </ws:reservarAsientoRequest>
   </soapenv:Body>
 </soapenv:Envelope>`;
@@ -397,11 +388,11 @@ export async function confirmarCompraAsiento(
   <soapenv:Header/>
   <soapenv:Body>
     <ws:confirmarCompraAsientoRequest>
-      <ws:codigoPartido>${codigoPartido}</ws:codigoPartido>
-      <ws:codigoLocalidad>${codigoLocalidad}</ws:codigoLocalidad>
-      <ws:numeroAsiento>${numeroAsiento}</ws:numeroAsiento>
-      <ws:clienteCedula>${clienteCedula}</ws:clienteCedula>
-      <ws:facturaId>${facturaId}</ws:facturaId>
+      <ws:codigoPartido>${escapeXml(codigoPartido)}</ws:codigoPartido>
+      <ws:codigoLocalidad>${escapeXml(codigoLocalidad)}</ws:codigoLocalidad>
+      <ws:numeroAsiento>${escapeXml(Number.isFinite(numeroAsiento) ? numeroAsiento : 0)}</ws:numeroAsiento>
+      <ws:clienteCedula>${escapeXml(clienteCedula)}</ws:clienteCedula>
+      <ws:facturaId>${escapeXml(facturaId)}</ws:facturaId>
     </ws:confirmarCompraAsientoRequest>
   </soapenv:Body>
 </soapenv:Envelope>`;
@@ -420,10 +411,10 @@ export async function liberarAsiento(
   <soapenv:Header/>
   <soapenv:Body>
     <ws:liberarAsientoRequest>
-      <ws:codigoPartido>${codigoPartido}</ws:codigoPartido>
-      <ws:codigoLocalidad>${codigoLocalidad}</ws:codigoLocalidad>
-      <ws:numeroAsiento>${numeroAsiento}</ws:numeroAsiento>
-      <ws:clienteCedula>${clienteCedula}</ws:clienteCedula>
+      <ws:codigoPartido>${escapeXml(codigoPartido)}</ws:codigoPartido>
+      <ws:codigoLocalidad>${escapeXml(codigoLocalidad)}</ws:codigoLocalidad>
+      <ws:numeroAsiento>${escapeXml(Number.isFinite(numeroAsiento) ? numeroAsiento : 0)}</ws:numeroAsiento>
+      <ws:clienteCedula>${escapeXml(clienteCedula)}</ws:clienteCedula>
     </ws:liberarAsientoRequest>
   </soapenv:Body>
 </soapenv:Envelope>`;
@@ -456,8 +447,8 @@ export async function consultarAsientos(
   <soapenv:Header/>
   <soapenv:Body>
     <ws:consultarAsientosRequest>
-      <ws:codigoPartido>${codigoPartido}</ws:codigoPartido>
-      <ws:codigoLocalidad>${codigoLocalidad}</ws:codigoLocalidad>
+      <ws:codigoPartido>${escapeXml(codigoPartido)}</ws:codigoPartido>
+      <ws:codigoLocalidad>${escapeXml(codigoLocalidad)}</ws:codigoLocalidad>
     </ws:consultarAsientosRequest>
   </soapenv:Body>
 </soapenv:Envelope>`;
@@ -476,14 +467,6 @@ export async function consultarAsientos(
       facturaId: findChildElement(el, 'facturaId') || undefined,
     };
   });
-}
-
-export function buscarUsuarioPorNombre(nombre: string): string {
-  return `SELECT id, nombre, email, cedula, password_hash FROM usuarios WHERE nombre LIKE '%${nombre}%' ORDER BY nombre`;
-}
-
-export function actualizarEstadoBoleto(boletoid: string, estado: string): string {
-  return `UPDATE boletos SET estado = '${estado}', updated_at = NOW() WHERE id = '${boletoid}'`;
 }
 
 export const soapClient = {

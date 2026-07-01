@@ -11,15 +11,15 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5173,
+    port: 3241,
     proxy: {
       '/soap/banco': {
-        target: 'http://209.145.48.25:18081',
+        target: 'http://localhost:18081',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/soap\/banco/, '/ws'),
       },
       '/soap/federacion': {
-        target: 'http://209.145.48.25:18082',
+        target: 'http://localhost:18082',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/soap\/federacion/, '/ws'),
       },

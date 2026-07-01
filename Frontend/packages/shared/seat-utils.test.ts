@@ -53,3 +53,18 @@ describe('soap XML tag expectations', () => {
     expect(tags).toContain('partidos');
   });
 });
+
+describe('ISSUE-002 — buildSeatVisualMap con arreglo vacío', () => {
+  test('retorna mapa vacío sin congelarse', () => {
+    const map = buildSeatVisualMap([], null);
+    expect(map).toBeInstanceOf(Map);
+    expect(map.size).toBe(0);
+  });
+
+  test('retorna en menos de 100ms (no hay bucle infinito)', () => {
+    const start = performance.now();
+    buildSeatVisualMap([], '123');
+    const elapsed = performance.now() - start;
+    expect(elapsed).toBeLessThan(100);
+  });
+});
