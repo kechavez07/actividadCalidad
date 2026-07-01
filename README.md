@@ -1,87 +1,112 @@
-# TicketPremium FIFA 2026
+# TicketPremium FIFA 2026 — Auditoría QA
 
-Sistema de venta de boletos para la Copa Mundial FIFA 2026 con soporte para compra a crédito bancario.
+> **Squad QA** · Auditoría cruzada sobre el proyecto del equipo Dev  
+> **Estándar:** ISO/IEC 25010 · **NRC:** 30733  
+> **Repo auditado:** [kechavez07/actividadCalidad](https://github.com/kechavez07/actividadCalidad)
 
-## Stack
+---
 
-- Monorepo: pnpm + Turborepo
-- Frontend: React 18 + Vite 5 + Tailwind CSS 3 + TypeScript
-- Desktop: Tauri 2 (Rust)
-- Estado: Zustand con persistencia en localStorage
-- Backend: Java 21 + Spring Boot 3.2.5 + SOAP XML (Banco + Federación)
-- Build: Maven
+## Veredicto de salud
 
-## Requisitos
+| Característica ISO/IEC 25010 | Estado | Razón |
+|---|:---:|---|
+| Seguridad | 🔴 CRÍTICO | `eval()`, SQL Injection, backdoor, 5 secretos hardcodeados |
+| Confiabilidad | 🔴 CRÍTICO | Subtotal incorrecto, bucle infinito, sanitización nula |
+| Cobertura de pruebas | 🔴 CRÍTICO | 0% en pricing, validation, useAuth, soap-client |
+| Mantenibilidad | 🟠 ALTO | CC ~28 en applyDiscountTier, funciones con 17-19 parámetros |
 
-- Node.js >= 18
-- pnpm >= 8
-- Java 21
-- Maven
+**El sistema no debe desplegarse en producción.**
 
-## Estructura del proyecto
+---
+
+## Estructura
 
 ```
-/
-├── Frontend/                   # Aplicación frontend
-│   ├── apps/
-│   │   ├── web/                # App web React (Vite)
-│   │   └── desktop/            # Cliente escritorio Tauri (Rust)
-│   └── packages/
-│       └── shared/             # Lógica compartida (tipos, pricing, SOAP, validación, hooks)
-└── Back/                       # Backend SOAP
-    ├── banco-service/          # Servicio bancario (Spring Boot)
-    ├── federacion-service/     # Servicio federación (Spring Boot)
-    └── shared-soap-models/     # Modelos SOAP compartidos
+├── QA/
+│   ├── QA_REPORT.md              ← Reporte completo ISO/IEC 25010
+│   ├── PITCH_EJECUTIVO.md        ← Guión Shark Tank 3 min
+│   └── ISSUES/
+│       ├── ISSUE-001.md          ← Bug: calcSubtotal divide por items.length
+│       ├── ISSUE-002.md          ← Bug: while(true){} bucle infinito
+│       ├── ISSUE-003.md          ← Vuln: eval() + SQL Injection (5 vectores)
+│       ├── ISSUE-004.md          ← Vuln: credenciales hardcodeadas + backdoor
+│       └── ISSUE-005.md          ← Deuda: 0% cobertura + CC > 20
+├── Frontend/packages/shared/
+│   ├── pricing.test.ts           ← Tests QA: bug de precios + applyDiscountTier
+│   ├── validation-cedulas.test.ts ← Tests QA: 23 cédulas + SQL Injection + eval
+│   └── seat-utils-bug.test.ts    ← Tests QA: bucle infinito (test.skip)
+├── sonar-project.properties      ← Config SonarCloud
+└── Instrucciones.md              ← Instrucciones originales de la actividad
 ```
 
-## Paso a paso para ejecutar
+---
 
-### 1. Backend (servicios SOAP)
+## Top 3 hallazgos críticos
 
-Los servicios SOAP deben estar corriendo antes que el frontend.
+### 1. El sistema cobra precios incorrectos — `pricing.ts:4`
+
+```typescript
+// BUGGY: divide por items.length → con 3 zonas distintas cobra 1/3 del total
+return items.reduce((sum, item) => sum + item.price * item.quantity, 0) / items.length;
+// Con carrito vacío → NaN (crash de UI)
+```
+
+### 2. Bucle infinito en selector de asientos — `seat-utils.ts:92`
+
+```typescript
+if (map.size === 0) {
+  while (true) {}  // congela el navegador para siempre
+}
+// Se activa cuando una localidad está agotada — muy frecuente en FIFA 2026
+```
+
+### 3. Backdoor de administrador visible en el bundle JS — `soap-client.ts:184`
+
+```typescript
+if (usuario === 'admin' && contrasena === 'override_123') {
+  return { usuario: 'admin', cedula: '9999999999' }; // bypass total de auth
+}
+// Cualquier usuario puede encontrarlo con DevTools → Sources → Ctrl+F
+```
+
+---
+
+## Ejecutar tests QA
 
 ```bash
-# 1. Ir a la carpeta del backend
-cd Back
+# Instalar dependencias
+cd Frontend && pnpm install
 
-# 2. Compilar todo el proyecto
-mvn clean install
-
-# 3. En una terminal, iniciar el servicio del Banco
-mvn spring-boot:run -pl banco-service
-
-# 4. En otra terminal, iniciar el servicio de la Federación
-mvn spring-boot:run -pl federacion-service
+# Correr suite completa con cobertura
+cd packages/shared
+bun test pricing.test.ts validation-cedulas.test.ts \
+         seat-utils-bug.test.ts seat-utils.test.ts stadium-resolve.test.ts \
+         --coverage
 ```
 
-Esto levanta:
-- Banco → `http://localhost:18081/ws`
-- Federación → `http://localhost:18082/ws`
+**Resultado:** ~100 tests ✓ · 0 fail · 1 skip intencional (bucle infinito)
 
-### 2. Frontend (aplicación web)
+---
+
+## Análisis SonarCloud
 
 ```bash
-# 1. Ir a la carpeta del frontend
-cd Frontend
-
-# 2. Instalar dependencias
-pnpm install
-
-# 3. Iniciar servidor de desarrollo
-pnpm web:dev
+# Requiere token de sonarcloud.io
+# Editar sonar-project.properties con tu organización y projectKey
+sonar-scanner -Dsonar.token=<TOKEN>
 ```
 
-Esto levanta la app en `http://localhost:5173`.
+> El equipo Dev no configuró SonarCloud en su repo original.  
+> La ausencia de Quality Gates en CI/CD permitió que todos los defectos llegaran  
+> al repositorio sin detección automática — esto es en sí mismo un hallazgo.
 
-### 3. Ejecutar tests
+---
 
-```bash
-cd Frontend
-pnpm --filter @ticketpremium/shared test
-```
+## Cédulas de prueba (provistas por el equipo Dev)
 
-Requiere tener instalado [Bun](https://bun.sh).
+| Estado | Cédulas |
+|---|---|
+| ✅ Sujeto de crédito (20 clientes) | `1712345678`, `1712345680`, `1712345683`–`1712345700` |
+| ❌ Rechazadas por el banco (3 clientes) | `1712345679` (H <25 años) · `1712345681` (crédito activo) · `1712345682` (sin DEP) |
 
-## Justificación
-
-Este código fue desarrollado bajo presión de tiempo para cumplir con la fecha límite del lanzamiento FIFA 2026. Gran parte de la deuda técnica es heredada de la versión original del prototipo. No se aplicaron revisiones de seguridad ni refactorización debido a la prioridad de tener un MVP funcional para demostraciones con stakeholders. El equipo era reducido y los sprints eran agresivos, por lo que se priorizó la funcionalidad sobre la calidad del código.
+Todas tienen test individual en `validation-cedulas.test.ts` con nombre y motivo visibles.
